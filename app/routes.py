@@ -37,3 +37,39 @@ def create_price_record():
     db.session.add(new_price_record)
     db.session.commit()
     return jsonify({'id': str(new_price_record.id)}), 201
+
+@app.route('/preferences', methods=['POST'])
+def create_preference():
+    data = request.get_json()
+    user = User.query.get(data['user_id'])
+    flight = Flight.query.get(data['flight_id'])
+    if not user or not flight:
+        return jsonify({'error': 'User or Flight not found'}), 404
+    new_preference = FlightPreference(user_id=user.id, flight_id=flight.id)
+    db.session.add(new_preference)
+    db.session.commit()
+    return jsonify({'id': str(new_preference.id)}), 201
+
+@app.route('/users/<user_id>/preferences', methods=['GET'])
+def get_user_preferences(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    preferences = FlightPreference.query.filter_by(user_id=user.id).all()
+    return jsonify([{
+        'id': str(pref.id),
+        'flight_id': str(pref.flight_id),
+        'origin': pref.flight.origin,
+        'destination': pref.flight.destination,
+        'departure_date': pref.flight.departure_date.isoformat(),
+        'return_date': pref.flight.return_date.isoformat() if pref.flight.return_date else None
+    } for pref in preferences]), 200
+
+@app.route('/preferences/<preference_id>', methods=['DELETE'])
+def delete_preference(preference_id):
+    preference = FlightPreference.query.get(preference_id)
+    if not preference:
+        return jsonify({'error': 'Preference not found'}), 404
+    db.session.delete(preference)
+    db.session.commit()
+    return '', 204
