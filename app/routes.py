@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app import app, db
 from app.models import User, Flight, FlightPreference, PriceRecord
+import uuid
 
 @app.route('/users', methods=['POST'])
 def create_user():
@@ -21,15 +22,18 @@ def create_flight():
     )
     db.session.add(new_flight)
     db.session.commit()
-    return jsonify({'id': new_flight.id}), 201
+    return jsonify({'id': str(new_flight.id)}), 201
 
 @app.route('/price_records', methods=['POST'])
 def create_price_record():
     data = request.get_json()
+    flight = Flight.query.get(data['flight_id'])
+    if not flight:
+        return jsonify({'error': 'Flight not found'}), 404
     new_price_record = PriceRecord(
         flight_id=data['flight_id'],
         price=data['price']
     )
     db.session.add(new_price_record)
     db.session.commit()
-    return jsonify({'id': new_price_record.id}), 201
+    return jsonify({'id': str(new_price_record.id)}), 201

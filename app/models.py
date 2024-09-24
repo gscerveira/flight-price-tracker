@@ -34,6 +34,6 @@ class PriceRecord(db.Model):
     flight_id = db.Column(UUID(as_uuid=True), db.ForeignKey('flights.id'), nullable=False)
     price = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=db.func.now())
-    flight = db.relationship('Flight', back_populates='price_records')
+    flight = db.relationship('Flight')
     
     

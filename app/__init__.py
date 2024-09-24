@@ -22,4 +22,4 @@ with app.app_context():
     else:
         print("Database already exists.")
 
-from app import models
+from app import models, routes
