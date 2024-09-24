@@ -15,10 +15,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Create the database if it doesn't exist
-if not database_exists(db.engine.url):
-    create_database(db.engine.url)
-    print("Database created.")
-else:
-    print("Database already exists.")
+with app.app_context():
+    if not database_exists(db.engine.url):
+        create_database(db.engine.url)
+        print("Database created.")
+    else:
+        print("Database already exists.")
 
 from app import models
