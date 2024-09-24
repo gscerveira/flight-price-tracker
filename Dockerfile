@@ -12,6 +12,7 @@ RUN uv sync --frozen
 
 # Activating the virtual environment
 ENV PATH="/app/.venv/bin:$PATH"
+ENV FLASK_APP=flight_price_tracker.py
 
 # Expose the Flask application port
 EXPOSE 5000

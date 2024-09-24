@@ -8,7 +8,7 @@ def generate_uuid():
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
-    email = db.column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     flight_preferences = db.relationship('FlightPreference', back_populates='user')
     
 class Flight(db.Model):

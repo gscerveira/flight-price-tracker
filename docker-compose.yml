@@ -20,15 +20,9 @@ services:
     build: .
     ports:
       - "5000:5000"
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
-          ignore:
-            - .venv/
-        - action: rebuild
-          path: ./pyproject.toml
+    volumes:
+      - .:/app
+      - /app/.venv
     networks:
       - app-network
 
