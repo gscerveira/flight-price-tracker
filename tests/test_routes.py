@@ -1,6 +1,7 @@
 import unittest
 from app import app, db
 from app.models import User, Flight, PriceRecord
+from unittest.mock import patch
 
 class APITestCase(unittest.TestCase):
     def setUp(self):
@@ -102,6 +103,18 @@ class APITestCase(unittest.TestCase):
         # Verify the preference was deleted
         response = self.app.get(f'/users/{user_id}/preferences')
         self.assertEqual(len(response.get_json()), 0)
+        
+    @patch('app.services.amadeus_client.AmadeusClient.search_flights')
+    def test_search_flights(self, mock_search_flights):
+        mock_search_flights.return_value = [{'id': 'flight1', 'price': {'total': '100.00'}}]
+        response = self.app.post('/search_flights', json={
+            'origin': 'NYC',
+            'destination': 'LAX',
+            'departure_date': '2024-12-01',
+            'return_date': '2024-12-08'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('flight1', str(response.get_json()))
 
 if __name__ == '__main__':
     unittest.main()

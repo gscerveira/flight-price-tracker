@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app import app, db
 from app.models import User, Flight, FlightPreference, PriceRecord
+from app.services.amadeus_client import AmadeusClient
 import uuid
 
 @app.route('/users', methods=['POST'])
@@ -73,3 +74,18 @@ def delete_preference(preference_id):
     db.session.delete(preference)
     db.session.commit()
     return '', 204
+
+@app.route('/search_flights', methods=['POST'])
+def search_flights():
+    data = request.get_json()
+    amadeus_client = AmadeusClient()
+    flights = amadeus_client.search_flights(
+        origin=data['origin'],
+        destination=data['destination'],
+        departure_date=data['departure_date'],
+        return_date=data.get('return_date')
+    )
+    if flights: 
+        return jsonify(flights), 200
+    else:
+        return jsonify({'error': 'No flights found'}), 404
