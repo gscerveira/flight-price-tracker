@@ -23,3 +23,10 @@ with app.app_context():
         print("Database already exists.")
 
 from app import models, routes
+from app.tasks import start_scheduler, stop_scheduler
+
+start_scheduler()
+
+@app.teardown_appcontext
+def shutdown_scheduler(exception=None):
+    stop_scheduler()
