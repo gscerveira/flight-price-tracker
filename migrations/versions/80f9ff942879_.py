@@ -1,8 +1,8 @@
-"""Remove bidirectional relationship for price_records
+"""empty message
 
-Revision ID: ecfa6f29c2c5
-Revises: ccbeb1b2af20
-Create Date: 2024-09-24 19:18:34.317744
+Revision ID: 80f9ff942879
+Revises: 
+Create Date: 2024-09-30 00:30:36.655631
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ecfa6f29c2c5'
-down_revision = 'ccbeb1b2af20'
+revision = '80f9ff942879'
+down_revision = None
 branch_labels = None
 depends_on = None
 

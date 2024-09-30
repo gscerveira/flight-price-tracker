@@ -1,14 +1,20 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from app import app, db
+from flask import current_app
+from app import db, scheduler
 from app.models import Flight, PriceRecord, FlightPreference, User
 from app.services.amadeus_client import AmadeusClient
 from app.services.notification_service import NotificationService
 from datetime import datetime
 
+notification_service = None
 scheduler = BackgroundScheduler()
-notification_service = NotificationService()
 
-def check_flight_prices():
+def init_notification_service(app):
+    global notification_service
+    with app.app_context():
+        notification_service = NotificationService()
+
+def check_flight_prices(app):
     with app.app_context():
         flights = Flight.query.all()
         amadeus_client = AmadeusClient()
@@ -51,9 +57,7 @@ def check_flight_prices():
                 db.session.add(new_price_record)
                 db.session.commit()
 
-def start_scheduler():
-    scheduler.add_job(check_flight_prices, 'interval', hours=24)
-    scheduler.start()
-
-def stop_scheduler():
-    scheduler.shutdown()
+def init_scheduler(app):
+    if not scheduler.running:
+        scheduler.add_job(check_flight_prices, 'interval', hours=24, args=[app])
+        scheduler.start()

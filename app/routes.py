@@ -1,10 +1,12 @@
-from flask import request, jsonify
-from app import app, db
+from flask import request, jsonify, current_app, Blueprint
+from app import db
 from app.models import User, Flight, FlightPreference, PriceRecord
 from app.services.amadeus_client import AmadeusClient
 import uuid
 
-@app.route('/users', methods=['POST'])
+bp = Blueprint('main', __name__)
+
+@bp.route('/users', methods=['POST'])
 def create_user():
     data = request.get_json()
     new_user = User(email=data['email'])
@@ -12,7 +14,7 @@ def create_user():
     db.session.commit()
     return jsonify({'id': new_user.id, 'email': new_user.email}), 201
 
-@app.route('/flights', methods=['POST'])
+@bp.route('/flights', methods=['POST'])
 def create_flight():
     data = request.get_json()
     new_flight = Flight(
@@ -25,7 +27,7 @@ def create_flight():
     db.session.commit()
     return jsonify({'id': str(new_flight.id)}), 201
 
-@app.route('/price_records', methods=['POST'])
+@bp.route('/price_records', methods=['POST'])
 def create_price_record():
     data = request.get_json()
     flight = Flight.query.get(data['flight_id'])
@@ -39,7 +41,7 @@ def create_price_record():
     db.session.commit()
     return jsonify({'id': str(new_price_record.id)}), 201
 
-@app.route('/preferences', methods=['POST'])
+@bp.route('/preferences', methods=['POST'])
 def create_preference():
     data = request.get_json()
     user = User.query.get(data['user_id'])
@@ -51,7 +53,7 @@ def create_preference():
     db.session.commit()
     return jsonify({'id': str(new_preference.id)}), 201
 
-@app.route('/users/<user_id>/preferences', methods=['GET'])
+@bp.route('/users/<user_id>/preferences', methods=['GET'])
 def get_user_preferences(user_id):
     user = User.query.get(user_id)
     if not user:
@@ -66,7 +68,7 @@ def get_user_preferences(user_id):
         'return_date': pref.flight.return_date.isoformat() if pref.flight.return_date else None
     } for pref in preferences]), 200
 
-@app.route('/preferences/<preference_id>', methods=['DELETE'])
+@bp.route('/preferences/<preference_id>', methods=['DELETE'])
 def delete_preference(preference_id):
     preference = FlightPreference.query.get(preference_id)
     if not preference:
@@ -75,7 +77,7 @@ def delete_preference(preference_id):
     db.session.commit()
     return '', 204
 
-@app.route('/search_flights', methods=['POST'])
+@bp.route('/search_flights', methods=['POST'])
 def search_flights():
     data = request.get_json()
     amadeus_client = AmadeusClient()
@@ -85,7 +87,7 @@ def search_flights():
         departure_date=data['departure_date'],
         return_date=data.get('return_date')
     )
-    if flights: 
+    if flights:
         return jsonify(flights), 200
     else:
         return jsonify({'error': 'No flights found'}), 404

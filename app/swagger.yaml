@@ -1,0 +1,269 @@
+openapi: 3.0.0
+info:
+  title: Flight Price Tracker API
+  description: API for tracking flight prices
+  version: 1.0.0
+paths:
+  /users:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:    
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                    format: email
+  /flights:
+    post:
+      summary: Create a new flight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: string
+                  example: "NYC"
+                destination:
+                  type: string
+                  example: "LAX"
+                departure_date:
+                  type: string
+                  format: date
+                  example: "2024-12-01"
+                return_date:
+                  type: string
+                  format: date
+                  example: "2024-12-08"
+              required:
+                - origin
+                - destination
+                - departure_date
+      responses:
+        '201':
+          description: Flight created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+  /price_records:
+    post:
+      summary: Create a new price record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flight_id:
+                  type: string
+                  format: uuid
+                price:
+                  type: number
+                  format: float
+              required:
+                - flight_id
+                - price
+      responses:
+        '201':
+          description: Price record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+  /preferences:
+    post:
+      summary: Create a new flight preference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                flight_id:
+                  type: string
+                  format: uuid
+              required:
+                - user_id
+                - flight_id
+      responses:
+        '201':
+          description: Flight preference created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+  /users/{user_id}/preferences:
+    get:
+      summary: Get user's flight preferences
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User's flight preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    flight_id:
+                      type: string
+                      format: uuid
+                    origin:
+                      type: string
+                    destination:
+                      type: string
+                    departure_date:
+                      type: string
+                      format: date
+                    return_date:
+                      type: string
+                      format: date
+  /preferences/{preference_id}:
+    delete:
+      summary: Delete a flight preference
+      parameters:
+        - in: path
+          name: preference_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Flight preference deleted successfully
+  /search_flights:
+    post:
+      summary: Search for flights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: string
+                  example: "NYC"
+                destination:
+                  type: string
+                  example: "LAX"
+                departure_date:
+                  type: string
+                  format: date
+                  example: "2024-12-01"
+                return_date:
+                  type: string
+                  format: date
+                  example: "2024-12-08"
+              required:
+                - origin
+                - destination
+                - departure_date
+      responses:
+        '200':
+          description: Flights found successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    instantTicketingRequired:
+                      type: boolean
+                    itineraries:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          duration:
+                            type: string
+                          segments:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                departure:
+                                  type: object
+                                  properties:
+                                    at:
+                                      type: string
+                                    iataCode:
+                                      type: string
+                                arrival:
+                                  type: object
+                                  properties:
+                                    at:
+                                      type: string
+                                    iataCode:
+                                      type: string
+                    price:
+                      type: object
+                      properties:
+                        currency:
+                          type: string
+                        total:
+                          type: string
+                    travelerPricings:
+                      type: array
+                      items:
+                        type: object
+        '404':
+          description: No flights found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string

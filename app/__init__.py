@@ -4,29 +4,43 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import database_exists, create_database
+from apscheduler.schedulers.background import BackgroundScheduler
+from flasgger import Swagger
 
-app = Flask(__name__)
+db = SQLAlchemy()
+migrate = Migrate()
+scheduler = BackgroundScheduler()
 
-app.config.from_object(Config)
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
 
-CORS(app)
+    db.init_app(app)
+    migrate.init_app(app, db)
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+    from app.tasks import init_scheduler, init_notification_service
 
-# Create the database if it doesn't exist
-with app.app_context():
-    if not database_exists(db.engine.url):
-        create_database(db.engine.url)
-        print("Database created.")
-    else:
-        print("Database already exists.")
+    with app.app_context():
+        init_scheduler(app)
+        init_notification_service(app)
 
-from app import models, routes
-from app.tasks import start_scheduler, stop_scheduler
+    from app import routes
+    app.register_blueprint(routes.bp)
+    
+    swagger = Swagger(app, template_file='swagger.yaml', config={
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True, 
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/apidocs/",
+        "openapi": "3.0.2"
+    })
 
-start_scheduler()
-
-@app.teardown_appcontext
-def shutdown_scheduler(exception=None):
-    stop_scheduler()
+    return app

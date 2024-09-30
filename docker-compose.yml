@@ -26,6 +26,13 @@ services:
     networks:
       - app-network
 
+  notification-service:
+    image: gcerveira/flight-price-notification:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+
 volumes:
   db_data:
 

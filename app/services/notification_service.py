@@ -1,5 +1,5 @@
-import requests
 from flask import current_app
+import requests
 
 class NotificationService:
     def __init__(self):
